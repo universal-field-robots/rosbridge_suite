@@ -18,28 +18,45 @@ INT_TYPES = [
     "uint32",
     "int64",
     "uint64",
+    "octet",
 ]
-FLOAT_TYPES = ["float", "double"]
+FLOAT_TYPES = ["float32", "float64", "float", "double"]
 STRING_TYPES = ["string"]
-BOOL_TYPES = ["boolean"]
+BOOL_TYPES = ["bool","boolean"]
 TIME_TYPES = ["time", "duration"]
 BOOL_ARRAY_TYPES = ["sequence<boolean>"]
 STRING_ARRAY_TYPES = ["sequence<string>"]
 BYTESTREAM_TYPES = ["sequence<uint8>", "sequence<char>"]
 
 # Typed array tags according to <https://tools.ietf.org/html/draft-ietf-cbor-array-tags-00>
+# More cbor tags info can be found here <https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml>
+# Structs info can be found here <https://docs.python.org/3/library/struct.html>
 # Always encode to little-endian variant, for now.
 TAGGED_ARRAY_FORMATS = {
-    "sequence<uint16>": (69, "<{}H"),
-    "sequence<uint32>": (70, "<{}I"),
-    "sequence<uint64>": (71, "<{}Q"),
+    "uint16[]": (69, "<{}H"),
+    "uint32[]": (70, "<{}I"),
+    "uint64[]": (71, "<{}Q"),
+    "byte[]": (72, "{}b"),
+    "int8[]": (72, "{}b"),
+    "uint8[]": (64, "{}B"),
     "sequence<byte>": (72, "{}b"),
     "sequence<int8>": (72, "{}b"),
+    "sequence<uint8>": (64, "{}B"),
     "sequence<int16>": (77, "<{}h"),
+    "sequence<uint16>": (69, "<{}H"),
     "sequence<int32>": (78, "<{}i"),
+    "sequence<uint32>": (70, "<{}I"),
     "sequence<int64>": (79, "<{}q"),
+    "sequence<uint64>": (71, "<{}Q"),
+    "sequence<float32>": (85, "<{}f"),
+    "sequence<float64>": (86, "<{}d"),
     "sequence<float>": (85, "<{}f"),
     "sequence<double>": (86, "<{}d"),
+    "int16[]": (77, "<{}h"),
+    "int32[]": (78, "<{}i"),
+    "int64[]": (79, "<{}q"),
+    "float32[]": (85, "<{}f"),
+    "float64[]": (86, "<{}d"),
 }
 
 
