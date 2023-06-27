@@ -310,7 +310,6 @@ def _to_binary_inst(msg):
 
 def _to_time_inst(msg, rostype, clock, inst=None):
     # Create an instance if we haven't been provided with one
-
     if rostype == "builtin_interfaces/Time" and msg == "now":
         return clock.now().to_msg()
 
