@@ -113,7 +113,7 @@ class MultiSubscriber:
         qos = QoSProfile(
             depth=10,
             durability=DurabilityPolicy.VOLATILE,
-            reliability=ReliabilityPolicy.BEST_EFFORT,
+            reliability=ReliabilityPolicy.RELIABLE,
         )
 
         infos = node_handle.get_publishers_info_by_topic(topic)
