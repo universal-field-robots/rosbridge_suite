@@ -31,6 +31,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from sys import stderr
 from threading import Lock, RLock
 
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
@@ -112,7 +113,7 @@ class MultiSubscriber:
         qos = QoSProfile(
             depth=10,
             durability=DurabilityPolicy.VOLATILE,
-            reliability=ReliabilityPolicy.RELIABLE,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
         )
 
         infos = node_handle.get_publishers_info_by_topic(topic)
@@ -300,6 +301,38 @@ class SubscriberManager:
             if not self._subscribers[topic].has_subscribers():
                 self._subscribers[topic].unregister()
                 del self._subscribers[topic]
+
+    def check_qos_profiles(self):
+        with self._lock:
+            for topic in self._subscribers.keys():
+                if self._subscribers[topic].qos.durability != DurabilityPolicy.TRANSIENT_LOCAL:
+
+                    infos = self._subscribers[topic].node_handle.get_publishers_info_by_topic(topic)
+                    if any(
+                        pub.qos_profile.durability == DurabilityPolicy.TRANSIENT_LOCAL
+                        for pub in infos
+                    ):
+                        # The subcription is not transient local but the publisher is so recreate the subscriber
+                        print(
+                            f"Resubscribing to {topic} with transient_local durability", file=stderr
+                        )
+                        with self._subscribers[topic].rlock:
+                            self._subscribers[topic].qos.durability = (
+                                DurabilityPolicy.TRANSIENT_LOCAL
+                            )
+                            self._subscribers[topic].node_handle.destroy_subscription(
+                                self._subscribers[topic].subscriber
+                            )
+                            self._subscribers[topic].subscriber = self._subscribers[
+                                topic
+                            ].node_handle.create_subscription(
+                                self._subscribers[topic].msg_class,
+                                topic,
+                                self._subscribers[topic].callback,
+                                self._subscribers[topic].qos,
+                                raw=self._subscribers[topic].raw,
+                                callback_group=self._subscribers[topic].callback_group,
+                            )
 
 
 manager = SubscriberManager()
