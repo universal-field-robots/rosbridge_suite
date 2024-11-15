@@ -86,8 +86,7 @@ class IncomingQueue(threading.Thread):
         """Clear the queue and do not accept further messages."""
         with self.cond:
             self._finished = True
-            while len(self.queue) > 0:
-                self.queue.popleft()
+            self.queue.clear()
             self.cond.notify()
 
     def push(self, msg):
@@ -96,10 +95,12 @@ class IncomingQueue(threading.Thread):
             self.cond.notify()
 
     def run(self):
-        while True:
+        while not self._finished:
             with self.cond:
                 if len(self.queue) == 0 and not self._finished:
-                    self.cond.wait()
+                    self.cond.wait(0.5)
+                    if len(self.queue) == 0:
+                        continue
 
                 if self._finished:
                     break

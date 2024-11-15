@@ -34,7 +34,6 @@
 
 import sys
 import time
-import gc
 
 import rclpy
 from rclpy.node import Node
@@ -340,8 +339,7 @@ def main(args=None):
     executor.add_node(node)
 
     def spin_ros():
-        executor.spin_once(timeout_sec=0.01)
-        gc.collect()
+        executor.spin_once()
 
         if not rclpy.ok():
             shutdown_hook()

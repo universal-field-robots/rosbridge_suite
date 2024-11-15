@@ -116,10 +116,10 @@ class Protocol:
         message_string -- the wire-level message sent by the client
 
         """
-        if len(self.buffer) > 0:
-            self.buffer = self.buffer + message_string
-        else:
-            self.buffer = message_string
+        self.buffer = self.buffer + message_string
+        if self.buffer == self.old_buffer:
+            return
+
         msg = None
 
         # take care of having multiple JSON-objects in receiving buffer
@@ -217,13 +217,9 @@ class Protocol:
         except Exception as exc:
             self.log("error", f"{op}: {str(exc)}", mid)
 
-        # if anything left in buffer .. re-call self.incoming
-        # TODO: check what happens if we have "garbage" on tcp-stack --> infinite loop might be triggered! .. might get out of it when next valid JSON arrives since only data after last 'valid' closing bracket is kept
         if len(self.buffer) > 0:
-            # try to avoid infinite loop..
-            if self.old_buffer != self.buffer:
-                self.old_buffer = self.buffer
-                self.incoming()
+            self.old_buffer = self.buffer
+            self.incoming()
 
     def outgoing(self, message, compression="none"):
         """Pass an outgoing message to the client.  This method should be
