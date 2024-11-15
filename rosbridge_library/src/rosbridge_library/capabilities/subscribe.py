@@ -75,6 +75,8 @@ class Subscription:
         self.handler_lock = Lock()
         self.update_params()
 
+        node_handle.create_timer(1.0, manager.check_qos_profiles)
+
     def unregister(self):
         """Unsubscribes this subscription and cleans up resources"""
         manager.unsubscribe(self.client_id, self.topic)

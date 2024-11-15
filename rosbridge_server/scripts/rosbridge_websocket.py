@@ -339,7 +339,8 @@ def main(args=None):
     executor.add_node(node)
 
     def spin_ros():
-        executor.spin_once(timeout_sec=0.01)
+        executor.spin_once()
+
         if not rclpy.ok():
             shutdown_hook()
 

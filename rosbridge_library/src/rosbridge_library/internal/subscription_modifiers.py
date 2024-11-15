@@ -131,7 +131,7 @@ class QueueMessageHandler(MessageHandler, Thread):
             with self.c:
                 old_queue = self.queue
                 self.queue = deque(maxlen=self.queue_length)
-                while len(old_queue) > 0:
+                while self.alive and len(old_queue) > 0:
                     self.queue.append(old_queue.popleft())
                 self.c.notify()
             return self
@@ -141,6 +141,7 @@ class QueueMessageHandler(MessageHandler, Thread):
         # Notify the thread to finish
         with self.c:
             self.alive = False
+            self.queue.clear()
             self.c.notify()
 
         if block:
@@ -151,9 +152,10 @@ class QueueMessageHandler(MessageHandler, Thread):
             msg = None
             with self.c:
                 if len(self.queue) == 0:
-                    self.c.wait()
+                    self.c.wait(0.1)
                 else:
-                    self.c.wait(self.time_remaining())
+                    tr = max(self.time_remaining(), 0.1)
+                    self.c.wait(tr)
                 if self.alive and self.time_remaining() == 0 and len(self.queue) > 0:
                     msg = self.queue.popleft()
             if msg is not None:
@@ -161,8 +163,3 @@ class QueueMessageHandler(MessageHandler, Thread):
                     MessageHandler.handle_message(self, msg)
                 except Exception:
                     traceback.print_exc(file=sys.stderr)
-        while self.time_remaining() == 0 and len(self.queue) > 0:
-            try:
-                MessageHandler.handle_message(self, self.queue[0])
-            except Exception:
-                traceback.print_exc(file=sys.stderr)

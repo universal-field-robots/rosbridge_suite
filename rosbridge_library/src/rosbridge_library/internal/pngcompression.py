@@ -49,9 +49,10 @@ def encode(string):
     buff = BytesIO()
     i.save(buff, "png")
     encoded = standard_b64encode(buff.getvalue())
-    return encoded
+    return encoded.decode()
 
 
+# we don't publish using the rosbridge. Update the decode function if we ever und up doing that.
 def decode(string):
     """b64 decode the string, then PNG-decompress and remove the '\n' padding"""
     decoded = standard_b64decode(string)
